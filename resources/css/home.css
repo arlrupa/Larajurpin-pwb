@@ -1,0 +1,45 @@
+.navbar,
+footer {
+    background-color: #003366;
+    color: white;
+}
+
+.tagline h2 {
+    color: white;
+}
+
+.btn-selengkapnya {
+    background-color: white;
+    color: #007b8a;
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.btn-selengkapnya:hover {
+    background-color: #007b8a;
+    color: white;
+}
+
+.btn-fasilitas {
+    background-color: #1282a2;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.btn-fasilitas:hover {
+    background-color: #c7ccce;
+    color: white;
+}
