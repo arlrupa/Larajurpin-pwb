@@ -8,9 +8,10 @@ use App\Models\User;
 use App\Notifications\PeminjamanStatusNotification;
 use Illuminate\Support\Facades\Log;
 
+
 class RiwayatPinjamController extends Controller
 {
-    // Menampilkan halaman riwayat peminjaman admin
+    // halaman admin: riwayat peminjaman
     public function index(Request $request)
     {
         $tanggal = $request->input('tanggal');
@@ -38,34 +39,41 @@ class RiwayatPinjamController extends Controller
         return view('pages.fasilitas.riwayatpeminjaman', compact('pending', 'approved'));
     }
 
-    // Mengubah status peminjaman dan mengirim notifikasi ke user
+    // Ubah status peminjaman (admin)
     public function update(Request $request, $id)
     {
         $request->validate([
             'status' => 'required|in:diterima,ditolak,dipinjam,selesai',
-            'keterangan' => 'nullable|string|max:255',
+            'keterangan_penolakan' => 'nullable|string|max:255',
         ]);
 
         $booking = Booking::findOrFail($id);
+
+        // Cek stok saat ingin menerima
+        if ($request->status === 'diterima') {
+            if ($booking->fasilitas->stock < $booking->unit_amount) {
+                return redirect()->back()->with('error', 'Stok tidak mencukupi untuk menyetujui peminjaman.');
+            }
+
+            $booking->fasilitas->decrement('stock', $booking->unit_amount);
+        }
+
         $booking->status = $request->status;
-        $booking->keterangan_penolakan = $request->keterangan;
+        $booking->keterangan_penolakan = $request->keterangan_penolakan;
         $booking->save();
 
+        // Kirim notifikasi ke user
         if ($booking->user) {
             try {
-                Log::info("Proses kirim notifikasi email ke user: " . $booking->user->email);
-
                 $booking->user->notify(new PeminjamanStatusNotification(
                     $booking->status,
                     $booking->keterangan_penolakan
                 ));
-
-                Log::info("Notifikasi berhasil dikirim ke: " . $booking->user->email);
             } catch (\Exception $e) {
-                Log::error("Gagal mengirim notifikasi ke " . $booking->user->email . ': ' . $e->getMessage());
+                Log::error("Gagal kirim notifikasi ke {$booking->user->email}: {$e->getMessage()}");
             }
         }
 
-        return redirect()->back()->with('success', 'Status peminjaman berhasil diperbarui dan notifikasi dikirim.');
+        return redirect()->back()->with('success', 'Status berhasil diperbarui dan notifikasi dikirim.');
     }
 }

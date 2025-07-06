@@ -13,8 +13,8 @@ class BookingController extends Controller
     public function create(Request $request)
     {
         $daftarFasilitas = Fasilitas::all();
-
         $fasilitas = null;
+
         if ($request->has('facility_id')) {
             $fasilitas = Fasilitas::find($request->facility_id);
         }
@@ -31,15 +31,23 @@ class BookingController extends Controller
             'fasilitas_id' => 'required|numeric',
             'unit_amount' => 'required|integer',
             'start_date' => 'required|date',
-            'end_date' => 'required|date',
-            'start_time' => 'required',
-            'end_time' => 'required',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i',
         ]);
 
-        $user = Auth::user();
+        // Jika di hari yang sama, pastikan jam berakhir > jam mulai
+        if (
+            $validated['start_date'] == $validated['end_date'] &&
+            $validated['start_time'] >= $validated['end_time']
+        ) {
+            return redirect()->back()->withInput()->with('error', 'Jam berakhir harus lebih besar dari jam mulai.');
+        }
+
+        // $user = Auth::user();
 
         Booking::create([
-            'user_id' => $user->id ?? 1,
+            'user_id' => Auth::id(),
             'instansi' => $validated['instansi'],
             'activity_description' => $validated['activity_description'],
             'fasilitas_id' => $validated['fasilitas_id'],
@@ -48,8 +56,8 @@ class BookingController extends Controller
             'end_date' => $validated['end_date'],
             'start_time' => $validated['start_time'],
             'end_time' => $validated['end_time'],
+            'status' => 'menunggu',
         ]);
-
 
         return redirect()->route('pages.user.riwayat')->with('success', 'Peminjaman berhasil diajukan!');
     }
@@ -69,30 +77,6 @@ class BookingController extends Controller
         return view('pages.user.riwayat', compact('bookings', 'notifications'));
     }
 
-    public function terima($id)
-    {
-        $booking = Booking::findOrFail($id);
-        $booking->status = 'diterima';
-        $booking->save();
-
-        return redirect()->back()->with('success', 'Peminjaman telah diterima.');
-    }
-
-    public function tolak(Request $request, $id)
-    {
-
-        $request->validate([
-            'keterangan_penolakan' => 'required|string|max:500',
-        ]);
-
-        $booking = Booking::findOrFail($id);
-        $booking->status = 'ditolak';
-        $booking->keterangan_penolakan = $request->keterangan_penolakan;
-        $booking->save();
-
-        return redirect()->route('riwayatpeminjaman')->with('success', 'Peminjaman telah ditolak dengan alasan.');
-    }
-
     public function kembalikan($id)
     {
         $pinjam = Booking::findOrFail($id);
@@ -104,6 +88,8 @@ class BookingController extends Controller
         $pinjam->status_pengembalian = 'sudah';
         $pinjam->save();
 
-        return redirect()->back()->with('success', 'Status pengembalian berhasil diperbarui.');
+        $pinjam->fasilitas->increment('stock', $pinjam->unit_amount);
+
+        return redirect()->back()->with('success', 'Status pengembalian berhasil diperbarui, stok telah ditambahkan.');
     }
 }

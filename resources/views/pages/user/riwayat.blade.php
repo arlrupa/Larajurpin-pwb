@@ -15,13 +15,12 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     @endforeach
-    
+
     <table class="table table-bordered text-center">
         <thead class="table-primary">
             <tr>
                 <th>No</th>
-                <th>Tanggal Peminjaman</th>
-                <th>Tanggal Pengembalian</th>
+                <th>Tanggal Peminjaman & Pengembalian</th>
                 <th>Fasilitas/Jumlah Unit</th>
                 <th>Peminjam</th>
                 <th>No. Telepon</th>
@@ -33,8 +32,11 @@
             @foreach($bookings as $index => $booking)
             <tr style="background-color: #f2f2f2">
                 <td>{{ $index + 1 }}</td>
-                <td>{{ \Carbon\Carbon::parse($booking->start_date)->format('d/m/Y') }}</td>
-                <td>{{ \Carbon\Carbon::parse($booking->end_date)->format('d/m/Y') }}</td>
+                <td>
+                    {{ \Carbon\Carbon::parse($booking->start_date)->format('d-m-Y') }} {{ \Carbon\Carbon::parse($booking->start_time)->format('H:i') }}
+                    -
+                    {{ \Carbon\Carbon::parse($booking->end_date)->format('d-m-Y') }} {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
+                </td>
                 <td>{{ $booking->fasilitas->name ?? '-' }} ({{ $booking->unit_amount }})</td>
                 <td>{{ $booking->user->name }}</td>
                 <td>{{ $booking->user->phone }}</td>
@@ -47,7 +49,7 @@
                     <span class="badge bg-danger text-white">Ditolak</span><br>
                     <small class="text-danger"><i class="bi bi-exclamation-circle"></i> {{ $booking->keterangan_penolakan }}</small>
                     @else
-                    <span class="badge bg-secondary">Selesai</span>
+                    <span class="badge bg-secondary">Menunggu</span>
                     @endif
                 </td>
                 <td>
