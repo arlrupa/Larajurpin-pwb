@@ -53,6 +53,8 @@
     </div>
 </div>
 
+
+
 @push('scripts')
 <!-- FullCalendar CSS and JS -->
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.css" rel="stylesheet">
@@ -60,6 +62,26 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/locales-all.global.min.js"></script>
 <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/bootstrap5@6.1.17/index.global.min.js'></script>
+
+<!-- <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            themeSystem: 'bootstrap5',
+            locale: 'id',
+            events: @json($events),
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,listWeek'
+            }
+        });
+
+        calendar.render();
+    });
+</script> -->
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -69,12 +91,18 @@
             initialView: 'dayGridMonth',
             themeSystem: 'bootstrap5',
             locale: 'id',
-            events: @json($events)
+            events: @json($events), // <-- ini ambil dari controller
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,listWeek'
+            }
         });
 
         calendar.render();
     });
 </script>
+
 @endpush
 
 @endsection

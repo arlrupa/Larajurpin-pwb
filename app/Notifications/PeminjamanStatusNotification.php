@@ -27,12 +27,11 @@ class PeminjamanStatusNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
+            ->subject('Status Peminjaman Anda Telah Diperbarui')
             ->greeting('Halo ' . $notifiable->name . ',')
-            ->line('Status peminjaman Anda telah diperbarui.')
-            ->line('Status: ' . ucfirst($this->status))
-            ->line('Keterangan: ' . ($this->keterangan ?? '-'))
-            ->action('Lihat Detail', url('/riwayat'))
-            ->line('Terima kasih telah menggunakan JURPIN.');
+            ->line('Status peminjaman Anda telah diperbarui menjadi: *' . strtoupper($this->status) . '*.')
+            ->when($this->keterangan, fn($msg) => $msg->line('Keterangan: ' . $this->keterangan))
+            ->line('Terima kasih telah menggunakan layanan kami.');
     }
 
     public function toArray($notifiable)

@@ -6,12 +6,18 @@
     </button>
 
     <!-- Topbar Search -->
-    @if (Request::is('fasilitas') || Request::is('fasilitas*'))
-    <form action="{{ route('fasilitas.index') }}" method="GET"
+    @if (Request::is('fasilitas') || Request::is('fasilitas*') || Request::is('riwayat-peminjaman'))
+    <form action="{{ Request::is('riwayat-peminjaman') ? route('riwayatpeminjaman') : route('fasilitas.index') }}" method="GET"
         class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
         <div class="input-group">
-            <input type="text" name="search" id="search-navbar" class="form-control bg-light border-0 small" placeholder="Cari..."
-                autocomplete="off" value="{{ request('search') }}">
+            <input
+                type="{{ Request::is('riwayat-peminjaman') ? 'date' : 'text' }}"
+                name="{{ Request::is('riwayat-peminjaman') ? 'tanggal' : 'search' }}"
+                id="search-navbar"
+                class="form-control bg-light border-0 small"
+                placeholder="{{ Request::is('riwayat-peminjaman') ? 'Cari Tanggal...' : 'Cari...' }}"
+                autocomplete="off"
+                value="{{ Request::is('riwayat-peminjaman') ? request('tanggal') : request('search') }}">
             <div class="input-group-append">
                 <button class="btn" type="submit" style="background: #E8EAEB">
                     <i class="fas fa-search fa-sm"></i>
@@ -20,7 +26,8 @@
         </div>
     </form>
     @endif
-    
+
+
     <ul class="navbar-nav ml-auto">
 
         <div class="topbar-divider d-none d-sm-block"></div>

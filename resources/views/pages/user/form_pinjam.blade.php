@@ -53,26 +53,27 @@
                 <input type="number" name="unit_amount" class="form-control" required>
             </div>
             <div class="col-md-6 mb-3">
-                <label>Tanggal Peminjaman<span class="text-danger">*</span></label>
+                <label>Tanggal Mulai Peminjaman<span class="text-danger">*</span></label>
                 <input type="date" name="start_date" class="form-control" required>
-            </div>
-            <div class="col-md-6 mb-3">
-                <label>Tanggal Pengembalian<span class="text-danger">*</span></label>
-                <input type="date" name="end_date" class="form-control" required>
             </div>
             <div class="col-md-6 mb-3">
                 <label>Jam Mulai<span class="text-danger">*</span></label>
                 <input type="time" name="start_time" class="form-control" required>
             </div>
             <div class="col-md-6 mb-3">
-                <label>Jam Berakhir<span class="text-danger">*</span></label>
+                <label>Tanggal Selesai Peminjaman<span class="text-danger">*</span></label>
+                <input type="date" name="end_date" class="form-control" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label>Jam Selesai<span class="text-danger">*</span></label>
                 <input type="time" name="end_time" class="form-control" required>
             </div>
-        </div>
+            <small class="text-muted">Contoh: dari 01/08/2025 jam 08:00 sampai 03/08/2025 jam 10:00</small>
 
-        <div class="clearfix mt-4">
-            <button type="submit" class="btn btn-submit float-end">Ajukan Peminjaman</button>
-        </div>
+
+            <div class="clearfix mt-4">
+                <button type="submit" class="btn btn-submit float-end">Ajukan Peminjaman</button>
+            </div>
 
     </form>
 </div>

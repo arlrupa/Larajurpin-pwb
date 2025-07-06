@@ -6,28 +6,8 @@
         <h1 class="h3 mb-0 text-gray-800">Konfirmasi Peminjaman</h1>
     </div>
 
-    {{-- FORM FILTER TANGGAL --}}
-    <div class="card shadow mb-4">
-        <div class="card-body">
-            <form method="GET" action="{{ route('riwayatpeminjaman') }}" class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <label for="tanggal" class="form-label fw-semibold">Filter Tanggal Peminjaman</label>
-                    <input type="date" name="tanggal" id="tanggal" class="form-control" value="{{ request('tanggal') }}">
-                </div>
-                <div class="col-md-4">
-                    <button type="submit" class="btn btn-primary me-2">
-                        <i class="bi bi-search"></i>
-                    </button>
-                    <a href="{{ route('riwayatpeminjaman') }}" class="btn btn-secondary">
-                        <i class="bi bi-arrow-clockwise"></i>
-                    </a>
-                </div>
-            </form>
-        </div>
-    </div>
 
-
-    <div class="table-responsive">
+    <div class="table-responsive mb-5">
         <table class="table table-bordered text-center align-middle">
             <thead class="text-white" style="background-color: #034078;">
                 <tr>
@@ -48,43 +28,54 @@
                     <td>{{ $pinjam->start_date }}</td>
                     <td>{{ $pinjam->end_date }}</td>
                     <td>{{ $pinjam->fasilitas->name ?? '-' }} / {{ $pinjam->unit_amount }}</td>
-                    <td>{{ $pinjam->user->name }}</td>
+                    <td>{{ $pinjam->user?->name ?? '-' }}</td>
                     <td>{{ $pinjam->user->phone }}</td>
                     <td>
                         <span class="badge bg-warning text-dark">Menunggu</span>
                     </td>
                     <td>
-                        <a href="{{ route('peminjaman.terima', $pinjam->id) }}" class="btn btn-success btn-sm" title="Terima Peminjaman">
-                            <i class="bi bi-check-circle"></i>
-                        </a>
-                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalTolak{{ $pinjam->id }}">
+                        {{-- Terima --}}
+                        <form method="POST" action="{{ route('peminjaman.update', $pinjam->id) }}" class="d-inline">
+                            @csrf
+                            <input type="hidden" name="status" value="diterima">
+                            <button class="btn btn-success btn-sm" title="Terima">
+                                <i class="bi bi-check-circle"></i>
+                            </button>
+                        </form>
+
+                        {{-- Tolak (modal) --}}
+                        <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#modalTolak{{ $pinjam->id }}" title="Tolak">
                             <i class="bi bi-x-circle"></i>
                         </button>
                     </td>
                 </tr>
 
-                <!-- Modal Tolak -->
-                <div class="modal fade" id="modalTolak{{ $pinjam->id }}" tabindex="-1" aria-labelledby="modalTolakLabel{{ $pinjam->id }}" aria-hidden="true">
+                {{-- Modal Tolak --}}
+                <div class="modal fade" id="modalTolak{{ $pinjam->id }}" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog">
-                        <form method="POST" action="{{ route('peminjaman.tolak', $pinjam->id) }}">
+                        <form method="POST" action="{{ route('peminjaman.update', $pinjam->id) }}">
                             @csrf
+                            <input type="hidden" name="status" value="ditolak">
                             <div class="modal-content">
                                 <div class="modal-header bg-danger text-white">
-                                    <h5 class="modal-title" id="modalTolakLabel{{ $pinjam->id }}">Tolak Peminjaman</h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                                    <h5 class="modal-title">Tolak Peminjaman</h5>
+                                    <button type="button" class="btn-close btn-close-white"
+                                        data-bs-dismiss="modal"></button>
                                 </div>
                                 <div class="modal-body">
                                     <p><strong>Nama:</strong> {{ $pinjam->user->name }}</p>
                                     <p><strong>Fasilitas:</strong> {{ $pinjam->fasilitas->name ?? '-' }}</p>
 
                                     <div class="mb-3">
-                                        <label for="keterangan_penolakan" class="form-label">Alasan Penolakan</label>
-                                        <textarea name="keterangan_penolakan" class="form-control" rows="4" required></textarea>
+                                        <label class="form-label">Alasan Penolakan</label>
+                                        <textarea name="keterangan_penolakan" rows="4" class="form-control" required></textarea>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                    <button type="submit" class="btn btn-danger">Tolak Peminjaman</button>
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Batal</button>
+                                    <button class="btn btn-danger">Tolak</button>
                                 </div>
                             </div>
                         </form>
@@ -94,6 +85,7 @@
             </tbody>
         </table>
     </div>
+
 
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Data Peminjaman</h1>

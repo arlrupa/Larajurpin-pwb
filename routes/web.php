@@ -41,12 +41,16 @@ Route::post('/logout', function () {
 // Home
 Route::get('/', function () {
     $fasilitas = Fasilitas::all();
-    $events = Booking::select(
-        'id',
-        'activity_description as title',
-        'start_date as start',
-        'end_date as end'
-    )->get();
+
+    $events = Booking::with('fasilitas')->get()->map(function ($booking) {
+        return [
+            'id' => $booking->id,
+            'title' => $booking->fasilitas->name ?? 'Tidak diketahui',
+            'start' => $booking->start_date,
+            'end' => $booking->end_date,
+        ];
+    });
+
     return view('pages.user.home', compact('fasilitas', 'events'));
 })->name('home');
 
@@ -65,7 +69,7 @@ Route::get('/detail/{id}', [FasilitasUserController::class, 'show'])->name('fasi
 /*
 | Protected Routes (auth middleware)
 */
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['role.access'])->group(function () {
 
     // Profil
     Route::get('/profile', function () {
@@ -101,9 +105,7 @@ Route::get('/users', [UserController::class, 'index']);
 Route::get('/riwayat-peminjaman', [RiwayatPinjamController::class, 'index'])->name('riwayatpeminjaman');
 
 // Konfirmasi dan Pengembalian Peminjaman
-Route::get('/peminjaman/{id}/terima', [BookingController::class, 'terima'])->name('peminjaman.terima');
-//Route::get('/peminjaman/{id}/tolak', [BookingController::class, 'tolak'])->name('peminjaman.tolak');
-Route::patch('/booking/{id}/kembalikan', [BookingController::class, 'kembalikan'])->name('booking.kembalikan');
+Route::post('/peminjaman/{id}/update', [RiwayatPinjamController::class, 'update'])->name('peminjaman.update');
 Route::get('/peminjaman/kembalikan/{id}', [BookingController::class, 'kembalikan'])->name('peminjaman.kembalikan');
 
 // Tampilkan form alasan penolakan (jika masih dipakai)
@@ -113,12 +115,17 @@ Route::get('peminjaman/{id}/tolak', [BookingController::class, 'formTolak'])->na
 Route::post('peminjaman/{id}/tolak', [BookingController::class, 'tolak'])->name('peminjaman.tolak');
 
 
-// contoh
-Route::get('/test-email', function () {
-    Mail::raw('Ini adalah email percobaan dari JURPIN', function ($message) {
-        $message->to('wulanviniaprilia@gmail.com') // Ganti dengan email kamu
-                ->subject('Cek Email dari JURPIN');
-    });
+// contoh notif aja ini
+use App\Models\User;
+use App\Notifications\PeminjamanStatusNotification;
 
-    return 'Email dikirim!';
+Route::get('/test-email', function () {
+    $user = User::find(3); 
+
+    if (!$user) {
+        return 'User dengan ID 3 tidak ditemukan.';
+    }
+
+    $user->notify(new PeminjamanStatusNotification('diterima', 'Contoh keterangan'));
+    return 'Email berhasil dikirim ke ' . $user->email;
 });

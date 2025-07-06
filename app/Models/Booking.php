@@ -13,19 +13,21 @@ class Booking extends Model
     use HasFactory;
 
     protected $fillable = [
-    'user_id',
-    'nama_lengkap',
-    'email',
-    'no_telp',
-    'instansi',
-    'activity_description',
-    'fasilitas_id',
-    'unit_amount',
-    'start_date',
-    'end_date',
-    'start_time',
-    'end_time',
-];
+        'user_id',
+        'nama_lengkap',
+        'email',
+        'no_telp',
+        'instansi',
+        'activity_description',
+        'fasilitas_id',
+        'unit_amount',
+        'start_date',
+        'end_date',
+        'start_time',
+        'end_time',
+        'status',
+        'status_pengembalian',
+    ];
 
 
     public function fasilitas()
@@ -36,5 +38,5 @@ class Booking extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-}
+    }
 }
