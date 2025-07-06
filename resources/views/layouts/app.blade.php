@@ -25,7 +25,6 @@
 
     <!-- Custom calender -->
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet' />
-
 </head>
 
 <body id="page-top">
@@ -133,6 +132,7 @@
 
     <!-- {{-- Tambahkan ini untuk script khusus halaman --}}
     @yield('scripts') -->
+    @stack('scripts')
 
 </body>
 

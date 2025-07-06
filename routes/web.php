@@ -30,14 +30,6 @@ Route::post('/logout', function () {
     return redirect('/');
 })->name('logout');
 
-// kode yang sebelumnya (bisa dihapus)
-// Route::middleware('auth')->group(function () {
-//     Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
-// }); 
-
-/*
-| Public Routes
-*/
 // Home
 Route::get('/', function () {
     $fasilitas = Fasilitas::all();
@@ -61,10 +53,6 @@ Route::get('/peminjaman-fasilitas', function () {
 })->name('peminjaman.fasilitas');
 
 Route::get('/detail/{id}', [FasilitasUserController::class, 'show'])->name('fasilitas.show');
-
-// kode fasilitas user yang sebelumnya (bisa dihapus)
-// Route::get('/home', [FasilitasUserController::class, 'indexHome'])->middleware('auth')->name('home');
-// Route::get('/peminjaman-fasilitas', [FasilitasUserController::class, 'indexFasilitas'])->middleware('auth');
 
 /*
 | Protected Routes (auth middleware)
@@ -98,7 +86,7 @@ Route::middleware(['role.access'])->group(function () {
 /*
 | Admin Dashboard and Management
 */
-Route::get('/dashboard', [DashboardController::class, 'index']);
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/users', [UserController::class, 'index']);
 
 // Riwayat Semua Peminjaman (Admin)
