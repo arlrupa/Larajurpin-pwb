@@ -6,6 +6,13 @@
         <h4 class="text-center fw-bold">Formulir Peminjaman</h4>
     </div>
 
+     {{-- Tampilkan pesan error --}}
+    @if(session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <form method="POST" action="{{ route('peminjaman.store') }}">
         @csrf
 

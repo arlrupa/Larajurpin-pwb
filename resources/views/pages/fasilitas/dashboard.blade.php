@@ -87,7 +87,7 @@
             initialView: 'dayGridMonth',
             themeSystem: 'bootstrap5',
             locale: 'id',
-            events: @json($events), // <-- ini ambil dari controller
+            events: @json($events), // diambil dari controller
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
