@@ -26,6 +26,7 @@ class RiwayatPinjamController extends Controller
                 $query->whereDate('start_date', $tanggal);
             })
             ->where('status', 'menunggu')
+            ->orderBy('created_at', 'desc')
             ->get();
 
         $approved = Booking::with(['user', 'fasilitas'])
@@ -59,7 +60,13 @@ class RiwayatPinjamController extends Controller
         }
 
         $booking->status = $request->status;
-        $booking->keterangan_penolakan = $request->keterangan_penolakan;
+
+        if ($request->status === 'diterima') {
+            $booking->keterangan_penolakan = 'Silahkan ambil barang di Sekretariat UKM Jurnalistik';
+        } else {
+            $booking->keterangan_penolakan = $request->keterangan_penolakan;
+        }
+
         $booking->save();
 
         // Kirim notifikasi ke user

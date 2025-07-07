@@ -9,9 +9,9 @@
 
     {{-- Tampilkan notifikasi email --}}
     @foreach($notifications as $notif)
-    <div class="alert alert-info alert-dismissible fade show" role="alert">
+    <div class="alert alert-info alert-dismissible fade show notification-alert" role="alert" data-id="{{ $notif->id }}">
         <strong>Status:</strong> {{ $notif->data['status'] }}<br>
-        <strong>Keterangan:</strong> {{ $notif->data['keterangan'] }}
+        <strong>Keterangan:</strong> {{ $notif->data['keterangan'] ?? '-' }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     @endforeach
@@ -67,5 +67,27 @@
             @endforeach
         </tbody>
     </table>
+
+    {{-- Script untuk tandai notifikasi sebagai dibaca --}}
+    <script>
+        document.querySelectorAll('.notification-alert .btn-close').forEach(function(button) {
+            button.addEventListener('click', function() {
+                let alertBox = this.closest('.notification-alert');
+                let notifId = alertBox.getAttribute('data-id');
+
+                fetch(`/notifications/${notifId}/read`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        console.log('Notifikasi ditandai sebagai dibaca');
+                    }
+                });
+            });
+        });
+    </script>
 </main>
 @endsection

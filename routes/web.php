@@ -1,39 +1,32 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FasilitasController;
 use App\Http\Controllers\FasilitasUserController;
+use App\Http\Controllers\NotifikasiController;
 use App\Http\Controllers\RiwayatPinjamController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\UserDashboardController;
-use App\Models\Booking;
 use App\Models\Fasilitas;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Mail;
+use App\Models\Booking;
 
-
-/*
-| Authentication Routes
-*/
-// Login & Register
+// Auth Route
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
-Route::get('/register', [AuthController::class, 'showRegister']);
-Route::post('/register', [AuthController::class, 'register']);
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register.show');
+Route::post('/register', [AuthController::class, 'register'])->name('register.perform');
 
-// Logout
 Route::post('/logout', function () {
     Auth::logout();
     return redirect('/');
 })->name('logout');
 
-// Home
+// Public Routes
 Route::get('/', function () {
     $fasilitas = Fasilitas::all();
-
     $events = Booking::with('fasilitas')->get()->map(function ($booking) {
         return [
             'id' => $booking->id,
@@ -42,11 +35,9 @@ Route::get('/', function () {
             'end' => $booking->end_date,
         ];
     });
-
     return view('pages.user.home', compact('fasilitas', 'events'));
 })->name('home');
 
-// Peminjaman Fasilitas
 Route::get('/peminjaman-fasilitas', function () {
     $fasilitas = Fasilitas::all();
     return view('pages.user.peminjaman-fasilitas', compact('fasilitas'));
@@ -54,66 +45,51 @@ Route::get('/peminjaman-fasilitas', function () {
 
 Route::get('/detail/{id}', [FasilitasUserController::class, 'show'])->name('fasilitas.show');
 
-/*
-| Protected Routes (auth middleware)
-*/
-Route::middleware(['role.access'])->group(function () {
+// Protected Routes (Role-based with role.access middleware)
+Route::middleware(['auth', 'role.access'])->group(function () {
 
-    // Profil
-    Route::get('/profile', function () {
-        return view('pages.user.profile');
-    })->name('pages.user.profile');
+    // USER Routes
+    Route::get('/profile', fn() => view('pages.user.profile'))->name('pages.user.profile');
 
-    // User Riwayat
     Route::get('/user/riwayat', [BookingController::class, 'riwayat'])->name('pages.user.riwayat');
 
-    // Form Peminjaman
     Route::get('/pinjam', [BookingController::class, 'create'])->name('peminjaman.create');
     Route::post('/pinjam', [BookingController::class, 'store'])->name('peminjaman.store');
 
-    // Riwayat Peminjaman User
-    Route::get('/riwayat', [BookingController::class, 'riwayat'])->name('pages.user.riwayat');
+    // ADMIN Routes
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Fasilitas (Admin)
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+
     Route::get('/fasilitas', [FasilitasController::class, 'index'])->name('fasilitas.index');
     Route::get('/fasilitas/create', [FasilitasController::class, 'create'])->name('fasilitas.create');
     Route::get('/fasilitas/{id}', [FasilitasController::class, 'edit'])->name('fasilitas.edit');
     Route::post('/fasilitas', [FasilitasController::class, 'store'])->name('fasilitas.store');
     Route::put('/fasilitas/{id}', [FasilitasController::class, 'update'])->name('fasilitas.update');
     Route::delete('/fasilitas/{id}', [FasilitasController::class, 'destroy'])->name('fasilitas.destroy');
+
+    Route::get('/riwayat-peminjaman', [RiwayatPinjamController::class, 'index'])->name('riwayatpeminjaman');
+
+    Route::post('/peminjaman/{id}/update', [RiwayatPinjamController::class, 'update'])->name('peminjaman.update');
+    Route::get('/peminjaman/kembalikan/{id}', [BookingController::class, 'kembalikan'])->name('peminjaman.kembalikan');
+
+    Route::get('/peminjaman/{id}/tolak', [BookingController::class, 'formTolak'])->name('peminjaman.tolakForm');
+    Route::post('/peminjaman/{id}/tolak', [BookingController::class, 'tolak'])->name('peminjaman.tolak');
 });
 
-/*
-| Admin Dashboard and Management
-*/
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-Route::get('/users', [UserController::class, 'index']);
-
-// Riwayat Semua Peminjaman (Admin)
-Route::get('/riwayat-peminjaman', [RiwayatPinjamController::class, 'index'])->name('riwayatpeminjaman');
-
-// Konfirmasi dan Pengembalian Peminjaman
-Route::post('/peminjaman/{id}/update', [RiwayatPinjamController::class, 'update'])->name('peminjaman.update');
-Route::get('/peminjaman/kembalikan/{id}', [BookingController::class, 'kembalikan'])->name('peminjaman.kembalikan');
-
-// Tampilkan form alasan penolakan (jika masih dipakai)
-Route::get('peminjaman/{id}/tolak', [BookingController::class, 'formTolak'])->name('peminjaman.tolakForm');
-
-// Proses penolakan
-Route::post('peminjaman/{id}/tolak', [BookingController::class, 'tolak'])->name('peminjaman.tolak');
+// Notifikasi Peminjaman di Web
+Route::post('/notifications/{id}/read', [NotifikasiController::class, 'markAsRead'])->middleware('auth')->name('notifications.read');
 
 
-// contoh notif aja ini
+// Test Email Route (Contoh)
 use App\Models\User;
 use App\Notifications\PeminjamanStatusNotification;
+use Illuminate\Support\Facades\Mail;
 
 Route::get('/test-email', function () {
-    $user = User::find(3); 
+    Mail::raw('Ini email test', function ($message) {
+        $message->to('wulanviniaprilia@gmail.com')->subject('Tes SMTP');
+    });
 
-    if (!$user) {
-        return 'User dengan ID 3 tidak ditemukan.';
-    }
-
-    $user->notify(new PeminjamanStatusNotification('diterima', 'Contoh keterangan'));
-    return 'Email berhasil dikirim ke ' . $user->email;
+    return 'Email test dikirim!';
 });

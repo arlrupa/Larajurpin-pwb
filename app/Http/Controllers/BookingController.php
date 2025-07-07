@@ -44,7 +44,7 @@ class BookingController extends Controller
             return redirect()->back()->withInput()->with('error', 'Jam berakhir harus lebih besar dari jam mulai.');
         }
 
-        // $user = Auth::user();
+        //$user = Auth::user();
 
         Booking::create([
             'user_id' => Auth::id(),
@@ -65,17 +65,20 @@ class BookingController extends Controller
     // Tampilkan Riwayat Peminjaman
     public function riwayat()
     {
-        $userId = Auth::id();
+        $user = Auth::user();
 
         $bookings = Booking::with(['fasilitas', 'user'])
-            ->where('user_id', $userId)
+            ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $notifications = Auth::user()->notifications;
+        $notifications = $user->unreadNotifications;
+
+        $user->unreadNotifications->markAsRead();
 
         return view('pages.user.riwayat', compact('bookings', 'notifications'));
     }
+
 
     public function kembalikan($id)
     {

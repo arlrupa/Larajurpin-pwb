@@ -5,7 +5,6 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 class RoleMiddleware
@@ -19,31 +18,34 @@ class RoleMiddleware
         $user = Auth::user();
         $role = $user->role;
 
-        $allowedRoutes = [
+        // Daftar nama route yang diizinkan per role
+        $allowedRouteNames = [
             'admin' => [
-                'dashboard*',
-                'users*',
-                'fasilitas*',
-                'riwayat-peminjaman*',
-                'peminjaman/*/terima',
-                'peminjaman/*/tolak',
-                'peminjaman/kembalikan/*',
-                'booking/*/kembalikan',
+                'dashboard',
+                'users.*',
+                'fasilitas.*',
+                'riwayatpeminjaman',
+                'peminjaman.update',
+                'peminjaman.kembalikan',
+                'peminjaman.tolakForm',
+                'peminjaman.tolak',
             ],
             'user' => [
-                'profile*',
-                'pinjam*',
-                'riwayat*',
-                'user/riwayat*',
+                'pages.user.profile',
+                'pages.user.riwayat',
+                'peminjaman.create',
+                'peminjaman.store',
             ],
         ];
 
-        foreach ($allowedRoutes[$role] ?? [] as $pattern) {
-            if ($request->is($pattern)) {
+        // Cek apakah route saat ini cocok dengan daftar yang diizinkan
+        foreach ($allowedRouteNames[$role] ?? [] as $pattern) {
+            if ($request->routeIs($pattern)) {
                 return $next($request);
             }
         }
 
-        abort(403, 'Akses ditolak: Anda tidak memiliki izin ke halaman ini.');
+        // Kalau tidak diizinkan
+        abort(403, 'Akses ditolak: Anda tidak memiliki izin ke halaman ini.');
     }
 }
